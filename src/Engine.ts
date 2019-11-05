@@ -223,7 +223,7 @@ function createBaseEntitiesPath(
 ): string {
     const resultPath = generationOptions.resultsPath;
     if (!fs.existsSync(resultPath)) {
-        fs.mkdirSync(resultPath);
+        fs.mkdirSync(resultPath, { recursive: true });
     }
 
     let entitesPath = resultPath;
@@ -232,7 +232,7 @@ function createBaseEntitiesPath(
         createTypeOrmConfig(resultPath, connectionOptions);
         entitesPath = path.resolve(resultPath, "./entities");
         if (!fs.existsSync(entitesPath)) {
-            fs.mkdirSync(entitesPath);
+            fs.mkdirSync(entitesPath, { recursive: true });
         }
     }
 
@@ -252,7 +252,7 @@ function createEntitySchemaPath(
         entity.Schema
     );
     if (!fs.existsSync(schemaPath)) {
-        fs.mkdirSync(schemaPath);
+        fs.mkdirSync(schemaPath, { recursive: true });
     }
 
     return schemaPath;
