@@ -13,7 +13,6 @@ import OracleDriver from "./drivers/OracleDriver";
 import SqliteDriver from "./drivers/SqliteDriver";
 import NamingStrategy from "./NamingStrategy";
 import AbstractNamingStrategy from "./AbstractNamingStrategy";
-
 import changeCase = require("change-case");
 import fs = require("fs");
 import path = require("path");
@@ -177,19 +176,10 @@ export function modelGenerationPhase(
     createHandlebarsHelpers(generationOptions);
     const templatePath = path.resolve(__dirname, "entity.mst");
     const template = fs.readFileSync(templatePath, "UTF-8");
-    const resultPath = generationOptions.resultsPath;
-    if (!fs.existsSync(resultPath)) {
-        fs.mkdirSync(resultPath);
-    }
-    let entitesPath = resultPath;
-    if (!generationOptions.noConfigs) {
-        createTsConfigFile(resultPath);
-        createTypeOrmConfig(resultPath, connectionOptions);
-        entitesPath = path.resolve(resultPath, "./entities");
-        if (!fs.existsSync(entitesPath)) {
-            fs.mkdirSync(entitesPath);
-        }
-    }
+    const entitesFolder = createBaseEntitiesPath(
+        generationOptions,
+        connectionOptions
+    );
     const compliedTemplate = Handlebars.compile(template, {
         noEscape: true
     });
@@ -211,13 +201,61 @@ export function modelGenerationPhase(
             default:
                 throw new Error("Unknown case style");
         }
-        const resultFilePath = path.resolve(entitesPath, `${casedFileName}.ts`);
+        const entitySchemaFolder = path.resolve(
+            entitesFolder,
+            createEntitySchemaPath(element, generationOptions)
+        );
+        const resultFilePath = path.resolve(
+            entitySchemaFolder,
+            `${casedFileName}.ts`
+        );
         const rendered = compliedTemplate(element);
         fs.writeFileSync(resultFilePath, rendered, {
             encoding: "UTF-8",
             flag: "w"
         });
     });
+}
+
+function createBaseEntitiesPath(
+    generationOptions: IGenerationOptions,
+    connectionOptions: IConnectionOptions
+): string {
+    const resultPath = generationOptions.resultsPath;
+    if (!fs.existsSync(resultPath)) {
+        fs.mkdirSync(resultPath);
+    }
+
+    let entitesPath = resultPath;
+    if (!generationOptions.noConfigs) {
+        createTsConfigFile(resultPath);
+        createTypeOrmConfig(resultPath, connectionOptions);
+        entitesPath = path.resolve(resultPath, "./entities");
+        if (!fs.existsSync(entitesPath)) {
+            fs.mkdirSync(entitesPath);
+        }
+    }
+
+    return entitesPath;
+}
+
+function createEntitySchemaPath(
+    entity: EntityInfo,
+    generationOptions: IGenerationOptions
+): string {
+    if (generationOptions.skipSchema || !entity.Schema) {
+        return "";
+    }
+
+    const schemaPath = path.resolve(
+        generationOptions.resultsPath,
+        entity.Schema
+    );
+    if (!fs.existsSync(schemaPath)) {
+        fs.mkdirSync(schemaPath);
+    }
+
+    return schemaPath;
 }
 
 function createHandlebarsHelpers(generationOptions: IGenerationOptions) {
