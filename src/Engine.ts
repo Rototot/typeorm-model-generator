@@ -176,7 +176,7 @@ export function modelGenerationPhase(
     createHandlebarsHelpers(generationOptions);
     const templatePath = path.resolve(__dirname, "entity.mst");
     const template = fs.readFileSync(templatePath, "UTF-8");
-    const entitesFolder = createBaseEntitiesPath(
+    const entitiesFolder = createBaseEntitiesPath(
         generationOptions,
         connectionOptions
     );
@@ -202,7 +202,7 @@ export function modelGenerationPhase(
                 throw new Error("Unknown case style");
         }
         const entitySchemaFolder = path.resolve(
-            entitesFolder,
+            entitiesFolder,
             createEntitySchemaPath(element, generationOptions)
         );
         const resultFilePath = path.resolve(
