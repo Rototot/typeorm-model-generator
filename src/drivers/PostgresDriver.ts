@@ -70,7 +70,7 @@ string_agg(enumlabel, ',')
 FROM "pg_enum" "e"
 INNER JOIN "pg_type" "t" ON "t"."oid" = "e"."enumtypid"
 INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace"
-WHERE "n"."nspname" = table_schema AND "t"."typname"=udt_name
+WHERE "n"."nspname" = c.udt_schema AND "t"."typname"=c.udt_name
         ) enumValues
             FROM INFORMATION_SCHEMA.COLUMNS c
             where table_schema in (${schema})
@@ -621,7 +621,7 @@ WHERE "n"."nspname" = table_schema AND "t"."typname"=udt_name
         if (!defaultValue) {
             return null;
         }
-        defaultValue = defaultValue.replace(/'::[\w ]*/, "'");
+        defaultValue = defaultValue.replace(/::[\w]*\.?[\w]*/, "");
         if (defaultValue.startsWith(`'`)) {
             return `() => "${defaultValue}"`;
         }
